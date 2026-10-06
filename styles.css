@@ -4,3 +4,4 @@
 
 .mobileNav{display:none;border-top:1px solid #1b2738;background:#080d14;padding:10px 14px}.mobileNav.open{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.mobileNav a{padding:10px;border:1px solid #24344a;border-radius:9px;background:#0c131d;color:#8fa0b5;text-decoration:none;font-size:10px}.menu:focus{outline:0}
 @media(max-width:640px){.mobileNav{display:none}.mobileNav.open{display:grid}.navin{min-height:62px}}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(15px);opacity:0;pointer-events:none;z-index:9999;padding:11px 15px;border:1px solid #385b87;border-radius:10px;background:rgba(9,16,27,.96);color:#dbe9ff;font-size:11px;box-shadow:0 16px 45px rgba(0,0,0,.4);transition:.2s}#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.footdisclaimer{display:block;margin-top:10px;color:#596b82;font-size:8px;line-height:1.7;max-width:360px}
