@@ -5,5 +5,7 @@ compatibility_date = "2026-10-06"
 [vars]
 FRONTEND_ORIGIN = "https://zhihebot.shop"
 
-# D1 and R2 bindings will be added in the Cloudflare Dashboard after the Worker is created.
-# This keeps the repository free of account-specific resource IDs.
+[[d1_databases]]
+binding = "DB"
+database_name = "zhihebot"
+database_id = "06889db4-3bc2-49a7-8d87-cd0b8eccf4d9"
