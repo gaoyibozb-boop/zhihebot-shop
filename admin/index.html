@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智核商店｜站长后台</title>
+<style>
+:root{color-scheme:dark;--bg:#070b12;--panel:#0d1420;--line:#243550;--text:#e7eef9;--muted:#7f91a8;--blue:#2d69c7;--blue2:#6ea7ff;--red:#ff6275}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#11223a 0,transparent 38%),var(--bg);color:var(--text);font:14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit}.shell{max-width:1200px;margin:0 auto;padding:28px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(135deg,#79b3ff,#315fd1);font-weight:900}.brand small{display:block;color:#61738b;font-size:10px;letter-spacing:.16em}.btn,.tab,button{border:1px solid #315072;background:#102341;color:#e8f1ff;border-radius:10px;padding:10px 14px;cursor:pointer}.btn.primary{background:#1b4d8e;border-color:#5c8fca}.btn.ghost{background:#0b131e}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(5,1fr)}.card{border:1px solid var(--line);background:rgba(13,20,32,.92);border-radius:16px;padding:18px}.stat small{display:block;color:var(--muted)}.stat strong{display:block;font-size:28px;margin-top:8px}.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.tab.active{background:#1a3d70;border-color:#5a8ac4}.section{display:none}.section.active{display:block}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}label{display:grid;gap:6px;color:#9aabc0;font-size:12px}.field{margin:12px 0}.input,textarea,select{width:100%;padding:11px 12px;border:1px solid #2a3d5a;border-radius:10px;background:#080f18;color:#fff;outline:0}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.table{width:100%;border-collapse:collapse}.table th,.table td{border-bottom:1px solid #1c2a3d;padding:10px;text-align:left;vertical-align:top;font-size:12px}.table th{color:#8da0b8}.tag{display:inline-block;padding:5px 8px;border:1px solid #2c4667;border-radius:99px;color:#8fb9f7;font-size:10px}.status{color:#8de0b1}.danger{color:var(--red)}.hint{color:#6f829b;font-size:11px;line-height:1.7}.paygrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.preview{max-width:180px;max-height:180px;display:block;border-radius:12px;border:1px solid #2b3e5b;background:#fff;padding:6px;margin-top:10px}.login{max-width:420px;margin:12vh auto}.center{text-align:center}.hide{display:none}.toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%);padding:11px 15px;border:1px solid #385b87;background:#09111d;color:#dbe9ff;border-radius:10px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}
+@media(max-width:800px){.stats,.two,.three,.paygrid{grid-template-columns:1fr}.shell{padding:16px}.table{font-size:11px}.table{display:block;overflow:auto}}
+</style>
+</head>
+<body>
+<div id="login" class="login card">
+<div class="center"><div class="logo" style="margin:0 auto">ZH</div><h1>站长后台</h1><p class="hint">智核商店管理入口</p></div>
+<div class="field"><label>管理员密码<input id="password" class="input" type="password" placeholder="请输入管理员密码"></label></div>
+<button id="loginBtn" class="btn primary" style="width:100%">登录</button>
+<p id="loginMsg" class="danger"></p>
+</div>
+<div id="app" class="shell hide">
+<div class="top"><div class="brand"><div class="logo">ZH</div><div><strong>智核商店</strong><small>ADMIN CONSOLE</small></div></div><button id="logout" class="btn ghost">退出登录</button></div>
+<div id="stats" class="grid stats"></div>
+<div class="tabs">
+<button class="tab active" data-tab="dashboard">仪表盘</button><button class="tab" data-tab="products">商品管理</button><button class="tab" data-tab="orders">订单管理</button><button class="tab" data-tab="payments">支付设置</button><button class="tab" data-tab="site">网站设置</button>
+</div>
+<section id="dashboard" class="section active"><div class="card"><h2>运营概览</h2><div id="dashText" class="hint">加载中…</div></div></section>
+<section id="products" class="section">
+<div class="card"><div class="top"><h2>商品管理</h2><button id="newProduct" class="btn primary">新增商品</button></div><div id="productForm" class="card hide"></div><div id="productList"></div></div>
+</section>
+<section id="orders" class="section"><div class="card"><div class="top"><h2>订单管理</h2><button id="refreshOrders" class="btn ghost">刷新</button></div><div id="orderList"></div></div></section>
+<section id="payments" class="section">
+<div class="card"><h2>支付设置</h2><p class="hint">二维码存放在 Cloudflare R2；支付配置存放在 D1。支付宝1支持填写你已经解码完成的纯净码，并由后端生成唤起链接。</p>
+<div class="paygrid">
+<div class="card"><h3>支付宝1</h3><label><input id="alipay1Enabled" type="checkbox"> 启用</label>
+<div class="field"><label>支付宝二维码<input id="alipay1File" type="file" accept="image/png,image/jpeg,image/webp"></label><div id="alipay1Qr"></div></div>
+<div class="field"><label>支付宝纯净码<textarea id="alipay1Code" class="input" rows="4" placeholder="粘贴已解码的纯净码"></textarea></label></div>
+<div class="field"><label>按钮文字<input id="alipay1Button" class="input"></label></div>
+<div class="hint">系统预览深链：<span id="alipay1Link">未配置</span></div></div>
+<div class="card"><h3>支付宝2</h3><label><input id="alipay2Enabled" type="checkbox"> 启用</label>
+<div class="field"><label>支付宝2二维码<input id="alipay2File" type="file" accept="image/png,image/jpeg,image/webp"></label><div id="alipay2Qr"></div></div>
+<div class="field"><label>支付链接（可选）<input id="alipay2Link" class="input" placeholder="https://..."></label></div>
+<div class="field"><label>按钮文字<input id="alipay2Button" class="input"></label></div></div>
+<div class="card"><h3>微信支付</h3><label><input id="wechatEnabled" type="checkbox"> 启用</label>
+<div class="field"><label>微信收款二维码<input id="wechatFile" type="file" accept="image/png,image/jpeg,image/webp"></label><div id="wechatQr"></div></div>
+<div class="field"><label>按钮/说明文字<input id="wechatButton" class="input"></label></div></div>
+<div class="card"><h3>USDT</h3><label><input id="usdtEnabled" type="checkbox"> 启用</label>
+<div class="field"><label>网络<input id="usdtNetwork" class="input" placeholder="TRC20"></label></div>
+<div class="field"><label>收款地址<input id="usdtAddress" class="input"></label></div>
+<div class="field"><label>二维码<input id="usdtFile" type="file" accept="image/png,image/jpeg,image/webp"></label><div id="usdtQr"></div></div></div>
+</div>
+<div class="row" style="margin-top:15px"><button id="savePayments" class="btn primary">保存支付设置</button><span id="payMsg" class="hint"></span></div>
+</div>
+</section>
+<section id="site" class="section"><div class="card"><h2>网站设置</h2>
+<div class="two grid"><label>网站名称<input id="siteName" class="input"></label><label>副标题<input id="siteSubtitle" class="input"></label><label>公告<input id="announcementText" class="input"></label><label>Telegram<input id="telegramUrl" class="input"></label></div>
+<div class="field"><label>弹窗标题<input id="popupTitle" class="input"></label></div><div class="field"><label>弹窗内容<textarea id="popupContent" class="input" rows="4"></textarea></label></div><div class="field"><label>安全提示<textarea id="popupNotice" class="input" rows="3"></textarea></label></div>
+<button id="saveSite" class="btn primary">保存网站设置</button>
+</div></section>
+</div>
+<div id="toast" class="toast"></div>
+<script src="./app.js?v=cf-20261007-1"></script>
+</body>
+</html>
