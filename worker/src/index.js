@@ -151,7 +151,29 @@ async function publicConfig(env) {
     usdt: { enabled: false, network: "TRC20", address: "", qrUrl: "" }
   });
   payments.alipay1 = payments.alipay1 || {};
-  payments.alipay1.deepLink = paymentDeepLink(payments.alipay1.pureCode);
+  payments.alipay1 = {
+    enabled: payments.alipay1.enabled !== false,
+    qrUrl: payments.alipay1.qrUrl || "",
+    buttonText: payments.alipay1.buttonText || "打开支付宝立即支付",
+    deepLink: paymentDeepLink(payments.alipay1.pureCode)
+  };
+  payments.alipay2 = {
+    enabled: payments.alipay2?.enabled !== false,
+    qrUrl: payments.alipay2?.qrUrl || "",
+    link: payments.alipay2?.link || "",
+    buttonText: payments.alipay2?.buttonText || "支付宝2支付"
+  };
+  payments.wechat = {
+    enabled: payments.wechat?.enabled !== false,
+    qrUrl: payments.wechat?.qrUrl || "",
+    buttonText: payments.wechat?.buttonText || "请打开微信扫一扫支付"
+  };
+  payments.usdt = {
+    enabled: payments.usdt?.enabled === true,
+    network: payments.usdt?.network || "TRC20",
+    address: payments.usdt?.address || "",
+    qrUrl: payments.usdt?.qrUrl || ""
+  };
   const rows = await env.DB.prepare(
     "SELECT * FROM products WHERE enabled=1 ORDER BY sort_order ASC, created_at ASC"
   ).all();
