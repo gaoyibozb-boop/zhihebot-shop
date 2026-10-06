@@ -60,6 +60,13 @@ const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const get=id=>P.find(x=>x.id===id);
 const money=n=>n?"¥"+Number(n).toFixed(2):"联系客服";
 const orders=()=>{try{return JSON.parse(localStorage.getItem("zhOrders")||"[]")}catch{return[]}};
+const PAYMENT_METHODS=[
+{id:"alipay1",name:"支付宝①",short:"支付宝",desc:"支付宝支付通道 ①"},
+{id:"alipay2",name:"支付宝②",short:"支付宝",desc:"支付宝支付通道 ②"},
+{id:"wechat",name:"微信支付",short:"微信",desc:"微信支付通道"},
+{id:"usdt",name:"USDT",short:"USDT",desc:"稳定币支付，具体网络以支付页为准"}
+];
+const paymentById=id=>PAYMENT_METHODS.find(x=>x.id===id);
 function toast(t){let x=$("#toast");if(!x){document.body.insertAdjacentHTML("beforeend",'<div id="toast"></div>');x=$("#toast")}x.textContent=t;x.classList.add("show");clearTimeout(window._tt);window._tt=setTimeout(()=>x.classList.remove("show"),2200)}
 function go(h){location.hash=h}
 function art(p,big=false){const L={ChatGPT:"AI",Claude:"CL",Gemini:"G",Grok:"X",Binance:"B","API / 中转":"API"};if(p.imageUrl)return '<div class="poster '+p.tone+(big?" big":"")+' hasImage"><img src="'+esc(p.imageUrl)+'" alt="'+esc(p.name)+'"/></div>';return '<div class="poster '+p.tone+(big?" big":"")+'"><span class="pgrid"></span><span class="pring p1"></span><span class="pring p2"></span><span class="pcore">'+L[p.cat]+'<small>'+esc(p.cat)+'</small></span><span class="pscan"></span><b>'+esc(p.delivery)+'</b></div>'}
