@@ -1,6 +1,6 @@
 name = "zhihebot-api"
 main = "src/index.js"
-compatibility_date = "2026-10-07"
+compatibility_date = "2026-10-06"
 
 [vars]
 FRONTEND_ORIGIN = "https://zhihebot.shop"
