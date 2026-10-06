@@ -12,17 +12,23 @@ let P=[
 {id:"binance-followers",slug:"binance-followers",cat:"Binance",tag:"人工核单",name:"币安广场刷粉业务",sub:"刷粉业务",price:400,sold:6,stock:"即将售罄",delivery:"人工核单发货",tone:"gold",desc:"平台增长类人工服务，具体处理范围以订单沟通为准。"},
 {id:"api-basic",slug:"api-basic",cat:"API / 中转",tag:"API",name:"AI API / 中转服务",sub:"接口服务 · 按量使用",price:0,sold:0,stock:"联系客服",delivery:"人工核单",tone:"cyan",desc:"开发者 API / 中转服务入口，模型、额度和计费以实际配置为准。"}
 ];
-let SITE={siteName:"智核商店",siteSubtitle:"AI 服务精选商城",announcementEnabled:true,announcementText:"主营各种 AI 工具充值、会员与数字服务",popupEnabled:true,popupTitle:"智核商店公告",popupContent:"下单前请仔细阅读商品说明、库存、交付方式和售后规则。付款后请保存订单号与查单信息。",popupNotice:"本站不会要求你提供第三方平台密码、支付密码、验证码、Cookie、Session、Token 或钱包私钥。",popupButtonText:"开始选购",footerDescription:"AI 会员、数字产品、卡密与开发者服务的一站式商城。",telegramUrl:"https://t.me/",qqUrl:""};
-const LIVE_ENDPOINT="https://zhihebot-shop.floot.app/_api/store/public";
+let PAY={alipay1:{enabled:true,qrUrl:"",pureCode:"",buttonText:"打开支付宝立即支付"},alipay2:{enabled:false,qrUrl:"",link:"",buttonText:"支付宝2支付"},wechat:{enabled:true,qrUrl:"",buttonText:"请打开微信扫一扫支付"},usdt:{enabled:false,network:"TRC20",address:"",qrUrl:""}};
+let SITE={siteName:"智核商店",siteSubtitle:"AI 服务精选商城",announcementEnabled:true,announcementText:"主营各种 AI 工具充值、会员与数字服务",popupEnabled:true,popconst API_BASE="https://api.zhihebot.shop";
 async function loadLive(){
  try{
-  const r=await fetch(LIVE_ENDPOINT,{cache:"no-store"});
+  const r=await fetch(API_BASE+"/public/config",{cache:"no-store"});
   if(!r.ok)return;
   const d=await r.json();
-  if(d.settings)SITE=d.settings;
+  if(d.settings)SITE={...SITE,...d.settings};
+  if(d.payments)PAY=d.payments;
   if(Array.isArray(d.products)&&d.products.length){
    P.length=0;
-   d.products.forEach(x=>P.push({id:x.id,slug:x.id,cat:x.category,tag:x.tag||x.category,name:x.name,sub:x.subtitle,price:Number(x.price)||0,sold:Number(x.sold)||0,stock:Number(x.stock)<=0?"已售罄":Number(x.stock)<6?"即将售罄":"充足",delivery:x.delivery,tone:"blue",desc:x.detail||x.subtitle,imageUrl:x.imageUrl||"",tips:x.tips||[],faq:x.faq||[]}));
+   d.products.forEach(x=>P.push({id:x.id,slug:x.id,cat:x.category,tag:x.tag||x.category,name:x.name,sub:x.subtitle,price:Number(x.price)||0,sold:Number(x.sold)||0,stock:Number(x.stock)<=0?"已售罄":Number(x.stock)<6?"即将售罄":"充足",delivery:x.delivery,tone:x.tone||"blue",desc:x.detail||x.subtitle,imageUrl:x.imageUrl||"",tips:x.tips||[],faq:x.faq||[]}));
+  }
+  if(!location.hash.startsWith("#/checkout/"))render();
+ }catch(e){console.warn("Cloudflare API unavailable",e)}
+}
+ck)<6?"即将售罄":"充足",delivery:x.delivery,tone:"blue",desc:x.detail||x.subtitle,imageUrl:x.imageUrl||"",tips:x.tips||[],faq:x.faq||[]}));
   }
   if(!location.hash.startsWith("#/checkout/"))render();
  }catch(e){console.warn("live catalog unavailable",e)}
@@ -83,14 +89,21 @@ function checkout(id){const p=get(id);if(!p)return detail(id);return header()+'<
 function order(id){
 let a=orders(),o=a.find(x=>x.no===id);
 if(!o)return header()+'<main class="wrap page"><div class="empty"><h1>订单不存在或已失效</h1><a class="btn" href="#/orders/lookup">去查单</a></div></main>'+footer();
-let selected=o.paymentMethod||"";
-return header()+'<main class="wrap page"><div class="formcard orderok"><div class="ok">✓</div><div class="over">ORDER CREATED</div><h1>订单已创建</h1><div class="ordercode">'+esc(id)+'</div><p>状态：'+esc(o.status||"待付款")+' · 金额：'+money(o.total)+'</p><div class="payselect"><div class="payselectHead"><div><h2>选择支付方式</h2><p>请选择付款方式，选择后进入独立支付页面。</p></div><span class="payBadge">待支付</span></div><div class="payMethods">'+PAYMENT_METHODS.map(m=>'<button class="payMethod '+(selected===m.id?"selected":"")+'" data-pay-method="'+m.id+'"><strong>'+m.name+'</strong><span>'+m.desc+'</span><i>→</i></button>').join("")+'</div></div><div class="heroBtns center"><a class="btn ghost" href="#/orders/lookup">查询订单</a><a class="btn ghost" href="#/products">继续购物</a></div></div></main>'+footer()
+let selected=o.paymentMethod||"", methods=PAYMENT_METHODS.filter(m=>{const cfg=PAY[m.id];return !cfg||cfg.enabled!==false;});
+return header()+'<main class="wrap page"><div class="formcard orderok"><div class="ok">✓</div><div class="over">ORDER CREATED</div><h1>订单已创建</h1><div class="ordercode">'+esc(id)+'</div><p>状态：'+esc(o.status||"待付款")+' · 金额：'+money(o.total)+'</p><div class="payselect"><div class="payselectHead"><div><h2>选择支付方式</h2><p>请选择付款方式，选择后进入独立支付页面。</p></div><span class="payBadge">待支付</span></div><div class="payMethods">'+methods.map(m=>'<button class="payMethod '+(selected===m.id?"selected":"")+'" data-pay-method="'+m.id+'"><strong>'+m.name+'</strong><span>'+m.desc+'</span><i>→</i></button>').join("")+'</div></div><div class="heroBtns center"><a class="btn ghost" href="#/orders/lookup">查询订单</a><a class="btn ghost" href="#/products">继续购物</a></div></div></main>'+footer()
 }
 
 function payment(id,method){
-let a=orders(),o=a.find(x=>x.no===id),m=paymentById(method);
+let a=orders(),o=a.find(x=>x.no===id),m=paymentById(method),cfg=PAY[method]||{};
 if(!o||!m)return header()+'<main class="wrap page"><div class="empty"><h1>支付订单不存在</h1><a class="btn" href="#/orders/lookup">去查单</a></div></main>'+footer();
-return header()+'<main class="wrap page"><div class="paymentPage"><div class="paymentTop"><div><div class="over">SECURE PAYMENT</div><h1>订单支付</h1><p>订单号：<strong>'+esc(id)+'</strong></p></div><div class="payAmount"><span>应付</span><strong>'+money(o.total)+'</strong></div></div><div class="paymentGrid"><section class="formcard paymentCard"><div class="methodIcon">'+esc(m.short)+'</div><div class="over">PAYMENT METHOD</div><h2>'+esc(m.name)+'</h2><p>'+esc(m.desc)+'</p><div class="paymentPlaceholder"><div class="scanBox"><span>'+esc(m.short)+'</span><small>PAY</small></div><div><b>支付通道待配置</b><p>独立支付页面已建立。接入真实支付商户接口后，这里可以显示二维码、支付链接或收款地址。</p></div></div><button class="btn full" id="startPay">立即支付</button><button class="btn ghost full" id="backPay">返回选择支付方式</button><div class="safe">请只按照订单页显示的金额和支付信息付款，不要向陌生地址私下转账。</div></section><aside class="formcard"><div class="over">ORDER</div><h2>'+esc(o.no)+'</h2><div class="sum"><span>商品</span><b>'+esc(get(o.id)?.name||"商品")+'</b></div><div class="sum"><span>支付方式</span><b>'+esc(m.name)+'</b></div><div class="sum total"><span>应付</span><strong>'+money(o.total)+'</strong></div></aside></div></div></main>'+footer()
+let content="";
+if(method==="alipay1")content=cfg.qrUrl?'<img class="paymentQr" src="'+esc(cfg.qrUrl)+'" alt="支付宝1收款二维码">':'<div class="paymentPlaceholder"><div class="scanBox"><span>支付宝</span><small>QR</small></div><div><b>尚未配置支付宝二维码</b><p>请在站长后台上传支付宝1收款二维码。</p></div></div>';
+else if(method==="wechat")content=cfg.qrUrl?'<img class="paymentQr" src="'+esc(cfg.qrUrl)+'" alt="微信收款二维码">':'<div class="paymentPlaceholder"><div class="scanBox"><span>微信</span><small>QR</small></div><div><b>尚未配置微信二维码</b><p>请在站长后台上传微信收款二维码。</p></div></div>';
+else if(method==="alipay2")content=cfg.qrUrl?'<img class="paymentQr" src="'+esc(cfg.qrUrl)+'" alt="支付宝2收款二维码">':'<div class="paymentPlaceholder"><div class="scanBox"><span>支付宝</span><small>QR</small></div><div><b>支付宝2</b><p>请在站长后台配置支付宝2。</p></div></div>';
+else if(method==="usdt")content=cfg.qrUrl?'<img class="paymentQr" src="'+esc(cfg.qrUrl)+'" alt="USDT二维码">':'<div class="paymentPlaceholder"><div class="scanBox"><span>USDT</span><small>PAY</small></div><div><b>USDT 收款</b><p>网络：'+esc(cfg.network||"TRC20")+'<br>地址：'+esc(cfg.address||"尚未配置")+'</p></div></div>';
+let action=method==="alipay1"&&cfg.deepLink?'<a class="btn full" href="'+esc(cfg.deepLink)+'">'+esc(cfg.buttonText||"打开支付宝立即支付")+'</a>':method==="alipay2"&&cfg.link?'<a class="btn full" href="'+esc(cfg.link)+'" target="_blank" rel="noopener">打开支付宝支付</a>':'';
+let note=method==="wechat"?"请打开微信扫一扫，扫描下方二维码完成支付。":method==="alipay1"?"也可以打开支付宝扫一扫扫描上方二维码。":method==="usdt"?"请核对网络与收款地址后再转账。":"请按照支付页面提示完成付款。";
+return header()+'<main class="wrap page"><div class="paymentPage"><div class="paymentTop"><div><div class="over">SECURE PAYMENT</div><h1>订单支付</h1><p>订单号：<strong>'+esc(id)+'</strong></p></div><div class="payAmount"><span>应付</span><strong>'+money(o.total)+'</strong></div></div><div class="paymentGrid"><section class="formcard paymentCard"><div class="methodIcon">'+esc(m.short)+'</div><div class="over">PAYMENT METHOD</div><h2>'+esc(m.name)+'</h2><p>'+esc(m.desc)+'</p><div class="paymentVisual">'+content+'</div>'+action+'<p class="paymentNote">'+note+'</p><button class="btn ghost full" id="backPay">返回选择支付方式</button><div class="safe">支付完成后请保留订单号。当前支付状态由后台人工确认，自动支付回调将在后续接入。</div></section><aside class="formcard"><div class="over">ORDER</div><h2>'+esc(o.no)+'</h2><div class="sum"><span>商品</span><b>'+esc(get(o.id)?.name||"商品")+'</b></div><div class="sum"><span>支付方式</span><b>'+esc(m.name)+'</b></div><div class="sum total"><span>应付</span><strong>'+money(o.total)+'</strong></div></aside></div></div></main>'+footer()
 }
 function lookup(){return header()+'<main class="wrap page"><div class="formpage"><div class="over">ORDER LOOKUP</div><h1>输入订单号、邮箱或手机号查看状态</h1><p>可以用订单号、下单邮箱或预留手机号 + 查询密码查看订单。</p><div class="formcard"><div class="field"><label>订单号或邮箱或手机号</label><input id="lkK" class="input" placeholder="例如 ZH202610060001、你的邮箱或手机号"></div><div class="field"><label>查询密码</label><input id="lkP" class="input" type="password" placeholder="下单时设置的6位以上查询密码"></div><button class="btn full" id="lookup">查询订单</button><div class="safe">✓ 不会要求你下载任何软件，也不会要求第三方平台密码、Cookie、Session、Token。</div><div id="lkR"></div></div></div></main>'+footer()}
 function accountOrders(){let a=orders();return header()+'<main class="wrap page"><div class="sectionhead"><div><div class="over">ORDER CENTER</div><h1>订单</h1><p>游客订单可以通过查单入口继续查看。</p></div><a class="btn" href="#/orders/lookup">游客查单</a></div>'+(a.length?a.map(o=>'<div class="orderrow"><div><b>'+esc(o.no)+'</b><span>'+esc(get(o.id)?.name||"商品")+'</span><small>'+esc(o.created)+'</small></div><div><strong>'+money(o.total)+'</strong><small>'+esc(o.status)+'</small></div></div>').join(""):'<div class="empty"><h2>还没有订单</h2><a class="btn" href="#/products">去逛商品</a></div>')+'</main>'+footer()}
@@ -115,20 +128,29 @@ document.querySelectorAll("[data-pay-method]").forEach(x=>x.onclick=()=>{const i
 if($("#backPay"))$("#backPay").onclick=()=>go("#/order/"+h.split("/")[2]);
 if($("#startPay"))$("#startPay").onclick=()=>toast("真实支付通道尚未配置，请先接入支付商户接口");
 if($("#create"))$("#create").onclick=async()=>{
-let p=get(h.split("/")[2]);
-if(!p)return toast("商品信息异常，请返回商品详情页重试");
+let p=get(h.split("/")[2]);if(!p)return toast("商品信息异常，请返回商品详情页重试");
 const rules=[["coE","邮箱",v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),"请输入正确的邮箱"],["coX","查单密码",v=>v.length>=6,"查单密码至少6位"]];
 let firstBad=null;
 rules.forEach(([id,label,ok,msg])=>{const el=$("#"+id),err=document.querySelector('[data-error-for="'+id+'"]'),v=el.value.trim();el.classList.remove("inputError");if(err)err.textContent="";if(!ok(v)){el.classList.add("inputError");if(err)err.textContent=msg;if(!firstBad)firstBad=el;}});
 if(firstBad){const missingEmail=!$("#coE").value.trim(),missingPass=!$("#coX").value.trim();const msg=missingEmail&&missingPass?"请完整填写邮箱和查单密码":missingEmail?"请填写邮箱":missingPass?"请填写查单密码":"请检查标红字段";const n=$("#checkoutNotice");if(n)n.textContent=msg;toast(msg);firstBad.focus();return;}
 let e=$("#coE").value.trim(),x=$("#coX").value,phone=$("#coP")?.value.trim()||"";
-let no="ZH"+Date.now().toString().slice(-10),a=orders();
-a.unshift({no,id:p.id,total:p.price,status:"待付款",paymentStatus:"待选择支付方式",paymentMethod:"",created:new Date().toLocaleString("zh-CN"),email:e,phone,pass:x});
-localStorage.setItem("zhOrders",JSON.stringify(a));
-localStorage.setItem("zhLastOrder",JSON.stringify({id:no,email:e,phone}));
-go("#/order/"+no);
+try{
+ const r=await fetch(API_BASE+"/orders/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({productId:p.id,email:e,phone,queryPassword:x,quantity:1})});
+ const d=await r.json();
+ if(!r.ok)throw new Error(d.error||"订单创建失败");
+ const no=d.orderId;
+ localStorage.setItem("zhOrders",JSON.stringify([{no,id:p.id,total:Number(d.total??p.price),status:"待付款",paymentStatus:"待选择支付方式",paymentMethod:"",created:new Date().toLocaleString("zh-CN"),email:e,phone},...orders()]));
+ localStorage.setItem("zhLastOrder",JSON.stringify({id:no,email:e,phone}));
+ go("#/order/"+no);
+}catch(err){const n=$("#checkoutNotice");if(n)n.textContent=err.message||"订单创建失败，请稍后重试";toast(err.message||"订单创建失败");}
 };
-if($("#lookup"))$("#lookup").onclick=async()=>{let k=$("#lkK").value.trim(),x=$("#lkP").value;if(!k||!x)return toast("请输入查单信息");try{let r=await fetch("https://zhihebot-shop.floot.app/_api/orders/lookup",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:JSON.stringify({key:k,queryPassword:x})});let d=await r.json();if(!r.ok)throw new Error("订单不存在或查询密码错误");let o=d.order;$("#lkR").innerHTML='<div class="result"><b>'+esc(o.id)+'</b><br>商品：'+esc(get(o.productId)?.name||o.productId)+'<br>状态：'+esc(o.status)+'<br>付款：'+esc(o.paymentStatus)+'<br>金额：'+money(Number(o.total))+'<br>交付：'+esc(o.deliveryContent||"暂未交付")+'</div>'}catch(err){$("#lkR").innerHTML='<div class="result">订单不存在或查询密码错误。</div>'}};
+if($("#lookup"))$("#lookup").onclick=async()=>{
+let k=$("#lkK").value.trim(),x=$("#lkP").value;if(!k||!x)return toast("请输入查单信息");
+try{
+ let r=await fetch(API_BASE+"/orders/lookup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:k,queryPassword:x})});
+ let d=await r.json();if(!r.ok)throw new Error(d.error||"订单不存在或查询密码错误");
+ let o=d.order;$("#lkR").innerHTML='<div class="result"><b>'+esc(o.id)+'</b><br>商品：'+esc(o.productName||o.productId)+'<br>状态：'+esc(o.status)+'<br>付款：'+esc(o.paymentStatus)+'<br>金额：'+money(Number(o.total))+'<br>交付：'+esc(o.deliveryContent||"暂未交付")+'</div>';
+}catch(err){$("#lkR").innerHTML='<div class="result">'+esc(err.message||"订单不存在或查询密码错误")+'</div>'}};
 document.querySelectorAll(".input").forEach(el=>el.addEventListener("input",()=>{if(el.classList.contains("inputError")){el.classList.remove("inputError");const er=document.querySelector('[data-error-for="'+el.id+'"]');if(er)er.textContent="";}const n=$("#checkoutNotice");if(n)n.textContent="";}));
 if($("#draw"))$("#draw").onclick=()=>{let a=["¥1券","9折券","¥5券","服务费减免","谢谢参与","¥10券"];$("#wheel").style.transform="rotate("+(1440+Math.floor(Math.random()*720))+"deg)";setTimeout(()=>{$("#prize").textContent="恭喜你："+a[Math.floor(Math.random()*a.length)]},900)};
 if($("#auth"))$("#auth").onclick=()=>toast("账户流程已提交（免费版演示）");
