@@ -1,0 +1,15 @@
+name = "zhihebot-api"
+main = "src/index.js"
+compatibility_date = "2026-10-07"
+
+[vars]
+FRONTEND_ORIGIN = "https://zhihebot.shop"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "zhihebot"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "zhihebot-assets"
