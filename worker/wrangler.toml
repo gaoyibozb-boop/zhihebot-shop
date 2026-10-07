@@ -8,4 +8,4 @@ FRONTEND_ORIGIN = "https://zhihebot.shop"
 [[d1_databases]]
 binding = "DB"
 database_name = "zhihebot"
-database_id = "06889db4-3bc2-49a7-8d87-cd0b8eccf4d9"
+database_id = "6bca47f3-6f47-42c5-8d6c-4392ff692633"
